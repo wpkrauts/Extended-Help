@@ -33,6 +33,7 @@ class Extended_Help
 		, 'contributor' 
 		, 'subscriber'
 	);
+	static $textdomain        = 'plugin-extended-help';
 	
 	/**
 	 * Handler for the action 'init'. Instantiates this class.
@@ -62,18 +63,12 @@ class Extended_Help
 	 */
 	public function __construct()
 	{
-		$this->constants();
 		$this->register_help_post_type();
 		$this->register_help_position();
 		
 		$this->loadtextdomain();
 		
 		add_filter( 'contextual_help', array ( $this, 'help_to_tab' ), 10, 3);
-	}
-	
-	private function constants()
-	{
-		define( 'PLUGIN_TEXTDOMAIN', 'plugin-extended-help');
 	}
 	
 	/**
@@ -100,7 +95,6 @@ class Extended_Help
 	 */
 	public function check_for_activate()
 	{
-		self::constants();
 		self::loadtextdomain();
 		
 		global $wp_version;
@@ -111,7 +105,7 @@ class Extended_Help
 			die( 
 				wp_sprintf( 
 					'<strong>%s:</strong> ' . 
-					__( 'Sorry, This plugin requires WordPress 3.0+', PLUGIN_TEXTDOMAIN )
+					__( 'Sorry, This plugin requires WordPress 3.0+', self::$textdomain )
 					, self::get_plugin_data('Name')
 				)
 			);
@@ -123,7 +117,7 @@ class Extended_Help
 			die( 
 				wp_sprintf(
 					'<strong>%1s:</strong> ' . 
-					__( 'Sorry, This plugin has taken a bold step in requiring PHP 5.0+, Your server is currently running PHP %2s, Please bug your host to upgrade to a recent version of PHP which is less bug-prone. At last count, <strong>over 80%% of WordPress installs are using PHP 5.2+</strong>.', PLUGIN_TEXTDOMAIN )
+					__( 'Sorry, This plugin has taken a bold step in requiring PHP 5.0+, Your server is currently running PHP %2s, Please bug your host to upgrade to a recent version of PHP which is less bug-prone. At last count, <strong>over 80%% of WordPress installs are using PHP 5.2+</strong>.', self::$textdomain )
 					, self::get_plugin_data('Name'), PHP_VERSION 
 				)
 			);
@@ -204,7 +198,7 @@ class Extended_Help
 	{
 		
 		// load language file
-		load_plugin_textdomain( PLUGIN_TEXTDOMAIN, FALSE, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+		load_plugin_textdomain( &$this->textdomain, FALSE, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 	}
 
 	/**
@@ -243,8 +237,8 @@ class Extended_Help
 
 		$defaults = array (
 			'heading_open'  => '<h3>'
-			, 'heading_close' => '</h3>'
-			, 'separator'     => '<hr />'
+		,	'heading_close' => '</h3>'
+		,	'separator'     => '<hr />'
 		);
 
 		$options = array_merge( $defaults, $args );
@@ -328,13 +322,13 @@ class Extended_Help
 		}
 
 		$labels = array (
-			'name'      => __( 'Help texts', PLUGIN_TEXTDOMAIN )
-		,	'menu_name' => __( 'Help texts', PLUGIN_TEXTDOMAIN )
+			'name'      => __( 'Help texts', &$this->textdomain )
+			, 'menu_name' => __( 'Help texts', &$this->textdomain )
 		);
 		register_post_type(
 			$this->post_type
 		,	array (
-				'label'         => __( 'Help texts', PLUGIN_TEXTDOMAIN )
+				'label'         => __( 'Help texts', &$this->textdomain )
 			,	'labels'        => $labels
 			,	'menu_position' => 100
 			,	'show_ui'       => TRUE
@@ -359,7 +353,7 @@ class Extended_Help
 
 		$args = array (
 			'hierarchical' => TRUE
-			, 'label'        => __( 'Position', PLUGIN_TEXTDOMAIN )
+			, 'label'        => __( 'Position', &$this->textdomain )
 			, 'public'       => FALSE
 			, 'show_ui'      => TRUE
 		);
@@ -374,10 +368,11 @@ class Extended_Help
 		// @todo I18n
 		// @todo update automatically when new screens are registered
 		// @todo better labels
+		// @todo more descriptions
 		$predefined_positions = array (
 			'dashboard' => array(
 				'name' => __( 'Dashboard' )
-				, 'description' => __( 'WordPress Dashboard with informations about your blog.', PLUGIN_TEXTDOMAIN )
+				, 'description' => __( 'WordPress Dashboard with informations about your blog.', &$this->textdomain )
 			)
 			, 'update-core' => array()
 			, 'edit' => array()
