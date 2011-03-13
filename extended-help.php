@@ -2,7 +2,7 @@
 /*
 Plugin Name: Extended Help
 Description: Help texts for super heroes
-Version:     0.2
+Version:     0.3
 Author:      Thomas Scholz
 Author URI:  http://toscho.de
 License:     GPL
@@ -10,6 +10,8 @@ License:     GPL
 
 // 'admin_init' is too late, doesn’t work.
 add_action( 'init', array ( 'Extended_Help', 'init' ) );
+// check fpr php- and Wp-version   
+register_activation_hook( __FILE__, array( 'Extended_Help', 'check_for_activate' ) );
 
 /**
  * Creates help text post type and a position taxonomy.
@@ -21,7 +23,17 @@ class Extended_Help
 {
 	public $post_type         = 'helptext';
 	public $position_taxonomy = 'helpposition';
-
+	// set capabilities on roles
+	public $todo_roles        = array( 
+		'administrator'
+		, 'editor' 
+	); 
+	public $read_roles        = array( 
+		'author'
+		, 'contributor' 
+		, 'subscriber'
+	);
+	
 	/**
 	 * Handler for the action 'init'. Instantiates this class.
 	 *
@@ -39,6 +51,8 @@ class Extended_Help
 		{
 			$GLOBALS[ $class ] = new $class;
 		}
+		register_activation_hook( __FILE__, array( &$this, 'on_activate' ) );
+		register_deactivation_hook( __FILE__, array( &$this, 'on_deactivate' ) );
 	}
 
 	/**
@@ -48,10 +62,149 @@ class Extended_Help
 	 */
 	public function __construct()
 	{
+		$this->constants();
 		$this->register_help_post_type();
 		$this->register_help_position();
-
+		
+		$this->loadtextdomain();
+		
 		add_filter( 'contextual_help', array ( $this, 'help_to_tab' ), 10, 3);
+	}
+	
+	private function constants()
+	{
+		define( 'PLUGIN_TEXTDOMAIN', 'plugin-extended-help');
+	}
+	
+	/**
+	 * return plugin comment data
+	 * 
+	 * @since 0.3
+	 * @param $value string, default = 'Version'
+	 *         Name, PluginURI, Version, Description, Author, AuthorURI, 
+	 *         TextDomain, DomainPath, Network, Title
+	 * @return string
+	 */
+	private function get_plugin_data( $value = 'Version' )
+	{
+			
+		$plugin_data = get_plugin_data( __FILE__ );
+		
+		return $plugin_data[$value];
+	}
+	
+	/**
+	 * capabilities and checkfor php- and wp-version
+	 * 
+	 * @since 0.3
+	 */
+	public function check_for_activate()
+	{
+		self::constants();
+		self::loadtextdomain();
+		
+		global $wp_version;
+		
+		// check wp version
+		if ( !version_compare( $wp_version, '3.0', '>=' ) ) {
+			deactivate_plugins(__FILE__);
+			die( 
+				wp_sprintf( 
+					'<strong>%s:</strong> ' . 
+					__( 'Sorry, This plugin requires WordPress 3.0+', PLUGIN_TEXTDOMAIN )
+					, self::get_plugin_data('Name')
+				)
+			);
+		}
+		
+		// check php version
+		if ( !version_compare( PHP_VERSION, '5.2.0', '>=') ) {
+			deactivate_plugins( __FILE__ ); // Deactivate ourself
+			die( 
+				wp_sprintf(
+					'<strong>%1s:</strong> ' . 
+					__( 'Sorry, This plugin has taken a bold step in requiring PHP 5.0+, Your server is currently running PHP %2s, Please bug your host to upgrade to a recent version of PHP which is less bug-prone. At last count, <strong>over 80%% of WordPress installs are using PHP 5.2+</strong>.', PLUGIN_TEXTDOMAIN )
+					, self::get_plugin_data('Name'), PHP_VERSION 
+				)
+			);
+		}
+	}
+	
+	/**
+	 * add capabilities
+	 * 
+	 * @since 0.3
+	 */
+	public function on_activate()
+	{
+		global $wp_roles;
+		
+		foreach ( $this->todo_roles as $role ) 
+		{
+			$wp_roles->add_cap( $role, 'edit_' . $this->post_type );
+			$wp_roles->add_cap( $role, 'edit_' . $this->post_type . 's' );
+			$wp_roles->add_cap( $role, 'edit_others_' . $this->post_type . 's' );
+			$wp_roles->add_cap( $role, 'publish_' . $this->post_type . 's' );
+			$wp_roles->add_cap( $role, 'read_' . $this->post_type );
+			$wp_roles->add_cap( $role, 'read_private_' . $this->post_type . 's' );
+			$wp_roles->add_cap( $role, 'delete_' . $this->post_type );
+			$wp_roles->add_cap( $role, 'manage_' . $this->taxonomy_type_1 );
+		}
+		
+		foreach ( $this->read_roles as $role ) 
+		{
+			$wp_roles->add_cap( $role, 'read_' . $this->post_type );
+			$wp_roles->add_cap( $role, 'read_' . $this->post_type );
+			$wp_roles->add_cap( $role, 'read_' . $this->post_type );
+		}
+		
+		global $wp_rewrite;
+		$wp_rewrite->flush_rules();
+	}
+	
+	/**
+	 * remove capabilities
+	 * 
+	 * @since 0.3
+	 */
+	public function on_deactivate() 
+	{
+		global $wp_roles;
+		
+		foreach ( $this->todo_roles as $role ) 
+		{
+			$wp_roles->remove_cap( $role, 'edit_' . $this->post_type );
+			$wp_roles->remove_cap( $role, 'edit_' . $this->post_type . 's' );
+			$wp_roles->remove_cap( $role, 'edit_others_' . $this->post_type . 's' );
+			$wp_roles->remove_cap( $role, 'publish_' . $this->post_type . 's' );
+			$wp_roles->remove_cap( $role, 'read_' . $this->post_type );
+			$wp_roles->remove_cap( $role, 'read_private_' . $this->post_type . 's' );
+			$wp_roles->remove_cap( $role, 'delete_' . $this->post_type );
+			$wp_roles->remove_cap( $role, 'manage_' . $this->taxonomy_type_1 );
+		}
+		
+		foreach ( $this->read_roles as $role ) 
+		{
+			$wp_roles->remove_cap( $role, 'read_' . $this->post_type );
+			$wp_roles->remove_cap( $role, 'read_' . $this->post_type );
+			$wp_roles->remove_cap( $role, 'read_' . $this->post_type );
+		}
+			
+		global $wp_rewrite;
+		$wp_rewrite->flush_rules();
+	}
+	
+	/**
+	 * Load the plugin-textdomain
+	 * 
+	 * @since 0.3
+	 *  
+	 */
+	public function loadtextdomain()
+	{
+		
+		// load language file
+		load_plugin_textdomain( PLUGIN_TEXTDOMAIN, FALSE, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 	}
 
 	/**
@@ -175,13 +328,13 @@ class Extended_Help
 		}
 
 		$labels = array (
-			'name'      => 'Hilfetexte'
-		,	'menu_name' => 'Hilfetexte'
+			'name'      => __( 'Help texts', PLUGIN_TEXTDOMAIN )
+		,	'menu_name' => __( 'Help texts', PLUGIN_TEXTDOMAIN )
 		);
 		register_post_type(
 			$this->post_type
 		,	array (
-				'label'         => 'Hilfetexte'
+				'label'         => __( 'Help texts', PLUGIN_TEXTDOMAIN )
 			,	'labels'        => $labels
 			,	'menu_position' => 100
 			,	'show_ui'       => TRUE
@@ -206,15 +359,15 @@ class Extended_Help
 
 		$args = array (
 			'hierarchical' => TRUE
-		,	'label'        => 'Position'
-		,	'public'       => FALSE
-		,	'show_ui'      => TRUE
+			, 'label'        => __( 'Position', PLUGIN_TEXTDOMAIN )
+			, 'public'       => FALSE
+			, 'show_ui'      => TRUE
 		);
 
 		register_taxonomy(
 			$this->position_taxonomy
-		,	array ( $this->post_type )
-		,	$args
+			, array ( $this->post_type )
+			, $args
 		);
 
 		// @todo extend
@@ -222,21 +375,36 @@ class Extended_Help
 		// @todo update automatically when new screens are registered
 		// @todo better labels
 		$predefined_positions = array (
-			'dashboard'
-		,	'update-core'
-		,	'edit'
-		,	'post'
-		,	'edit-tags'
-		,	'plugins'
-		,	'plugin-install'
-		,	'plugin-editor'
+			'dashboard' => array(
+				'name' => __( 'Dashboard' )
+				, 'description' => __( 'WordPress Dashboard with informations about your blog.', PLUGIN_TEXTDOMAIN )
+			)
+			, 'update-core' => array()
+			, 'edit' => array()
+			, 'post' => array()
+			, 'edit-tags' => array()
+			, 'plugins' => array()
+			, 'plugin-install' => array()
+			, 'plugin-editor' => array()
 		);
-
-		foreach ( $predefined_positions as $pos )
+		
+		foreach ( $predefined_positions as $pos => $args )
 		{
 			if ( ! term_exists( $pos, $this->position_taxonomy ) )
 			{
-				wp_insert_term( $pos, $this->position_taxonomy );
+				if ( !isset($args['name']) )
+					$args['name'] = $pos;
+				if ( ( !isset($args['description']) ) )
+					$args['description'] = '';
+				
+				wp_insert_term( 
+					$args['name']
+					, $this->position_taxonomy
+					, array( 
+						'description' => $args['description']
+						, 'slug' => $pos
+					)
+				);
 			}
 		}
 	}
@@ -258,4 +426,4 @@ function eh_screen_info( $contextual_help, $screen_id, $screen )
 }
 
 # debug info
-# add_filter( 'contextual_help', 'eh_screen_info', 10, 3);
+//add_filter( 'contextual_help', 'eh_screen_info', 10, 3);
