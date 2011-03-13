@@ -243,8 +243,8 @@ class Extended_Help
 
 		$defaults = array (
 			'heading_open'  => '<h3>'
-		,	'heading_close' => '</h3>'
-		,	'separator'     => '<hr />'
+			, 'heading_close' => '</h3>'
+			, 'separator'     => '<hr />'
 		);
 
 		$options = array_merge( $defaults, $args );
