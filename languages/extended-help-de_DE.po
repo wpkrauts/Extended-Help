@@ -1,0 +1,54 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Extended Help v0.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2011-03-13 18:19+0000\n"
+"Last-Translator: admin <frank@bueltge.de>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Poedit-Language: German\n"
+"X-Poedit-Country: GERMANY\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-KeywordsList: __;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;_n_noop:1,2;_c,_nc:4c,1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;\n"
+"X-Poedit-Basepath: \n"
+"X-Poedit-Bookmarks: \n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Textdomain-Support: yes"
+
+#: extended-help.php:108
+#@ extended-help
+msgid "Sorry, This plugin requires WordPress 3.0+"
+msgstr "Entschuldigung, aber dieses Plugin benötigt WordPress 3.0+"
+
+#: extended-help.php:120
+#, php-format
+#@ extended-help
+msgid "Sorry, This plugin has taken a bold step in requiring PHP 5.0+, Your server is currently running PHP %2s, Please bug your host to upgrade to a recent version of PHP which is less bug-prone. At last count, <strong>over 80%% of WordPress installs are using PHP 5.2+</strong>."
+msgstr "Entschuldigung, aber dieses Plugin hat einen mutigen Schritt in der PHP Bedingung genommen: 5.0+, Der Server läuft derzeit mit PHP%2s. Bitte deinen Hoster zu einer neueren Version von PHP, die weniger Fehleranfällig für ein Upgrade ist. Bei der letzten Zählung <strong>waren es mehr als 80%, die WordPress installiert haben mit PHP 5.2+</strong>."
+
+#: extended-help.php:325
+#: extended-help.php:326
+#: extended-help.php:331
+#@ extended-help
+msgid "Help texts"
+msgstr "Hilfetexte"
+
+#: extended-help.php:356
+#@ extended-help
+msgid "Position"
+msgstr "Position"
+
+#: extended-help.php:374
+#@ default
+msgid "Dashboard"
+msgstr ""
+
+#: extended-help.php:375
+#@ extended-help
+msgid "WordPress Dashboard with informations about your blog."
+msgstr "Das WordPress Dashboard mit Informationen über dieses Blog."
+
